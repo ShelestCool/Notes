@@ -1,0 +1,9 @@
+body {
+    background-image: url(../img/fon.jpg);
+    background-repeat: no-repeat;
+}
+
+.menu-add {
+    width: 100%;
+    padding: 20px;
+}
