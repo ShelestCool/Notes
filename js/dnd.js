@@ -38,10 +38,16 @@ export class DnD {
     if (this.methodSetCoords != null) {
       this.methodSetCoords(this.elem, { x: this.left, y: this.top });
     }
+
+    this.elem.classList.remove("moved");
+    this.elem.classList.add("getUp");
   }
 
   _mouseMove(event) {
     this._trackMouse(event.pageX, event.pageY);
+
+    this.elem.classList.add("moved");
+    this.elem.classList.remove("getUp");
   }
 
   _trackMouse(pageX, pageY) {
