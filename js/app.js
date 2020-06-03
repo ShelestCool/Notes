@@ -1,6 +1,5 @@
-import {Note} from './note';
+import { Note } from "./note";
 
-const newNoteBtnNode = document.querySelector('#newNoteBtn');
-const changeColorNote = document.querySelector('#changeColorNote');
+const newNoteBtnNode = document.querySelector("#newNoteBtn");
 
-new Note(newNoteBtnNode, changeColorNote);
+new Note(newNoteBtnNode);

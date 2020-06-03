@@ -1,95 +1,119 @@
-import {DnD} from './dnd';
+import { DnD } from "./dnd";
+import imgSrc from "../img/btn.png";
 
 export class Note {
-  constructor(button ,buttonColor) {
+  constructor(button) {
     this.data = [];
-    this.container = document.querySelector('.container'); // контейнер, нужен для изоляции заметок от остального html
+    this.container = document.querySelector(".container"); // контейнер, нужен для изоляции заметок от остального html
     this.button = button;
-    this.buttonColor = buttonColor;
+    this.btnChacngeColor = document.querySelector("#changeColorNote");
 
     this._handleClickButton = this._clickButton.bind(this);
-    this._handleClickChangeColor = this._clickChangeColor.bind(this);
     this.setCoords = this._setCoords.bind(this);
 
     this._init();
   }
 
   _init() {
-    this.button.addEventListener('click', this._handleClickButton);
-    this.buttonColor.addEventListener('click', this._handleClickChangeColor);
+    this.button.addEventListener("click", this._handleClickButton);
   }
 
   // метод для записи координат в data, передаём его в класс DnD
   _setCoords(note, coords) {
-    const index = note.getAttribute('data-index');
+    const index = note.getAttribute("data-index");
 
     this.data[index].left = coords.x;
     this.data[index].top = coords.y;
     console.log(this.data); // если вызвать в контексте класса Note в другом классе, есть доступ к data
   }
 
-  _constructorNote(content, top, left) {
+  _constructorNote(content, top, left, color) {
     return {
       content,
       top,
-      left
-    }
+      left,
+      color,
+    };
   }
 
   _clickButton() {
-    const newNoteObj = this._constructorNote('Hello', 48, 24); // передаём дефолтные значения
+    const color = this.btnChacngeColor.value;
+    const newNoteObj = this._constructorNote("Hello", 48, 24, color); // передаём дефолтные значения
     this.data.push(newNoteObj);
 
     this.render();
   }
 
-  _clickChangeColor() {
-    const changeBgColor = document.querySelector('.note');
+  _clickCloseNote(index) {
+    this.data.splice(index, 1);
+    this.render();
+  }
 
-    if (this.buttonColor.classList.value.includes('text-info')){
-        this.buttonColor.classList.remove('text-info');
-        this.buttonColor.classList.add('text-danger');
-        changeBgColor.style.background = 'rgb(214, 40, 40)';
+  _editNote(textareaNode, contentNode, index) {
+    if (textareaNode.hidden) {
+      textareaNode.hidden = false;
+      contentNode.hidden = true;
     } else {
-        this.buttonColor.classList.add('text-info');
-        this.buttonColor.classList.remove('text-danger');
-        changeBgColor.style.background = 'rgba(121, 149, 187, 0.883)';
+      textareaNode.hidden = true;
+      contentNode.hidden = false;
+      this.data[index].content = textareaNode.value;
+
+      this.render();
     }
   }
 
   _createNote(data, index) {
-    const [divNode, buttonNode, textAreaNode] = [
-      document.createElement('div'),
-      document.createElement('div'),
-      document.createElement('textarea'),
-    ]
+    const [divNode, buttonNode, textareaNode] = [
+      document.createElement("div"),
+      document.createElement("div"),
+      document.createElement("textarea"),
+    ];
 
     const noteNode = divNode.cloneNode(true);
-    noteNode.setAttribute('data-index', index); // index нужен, чтобы найти объект в массиве data
-    noteNode.classList.add('note');
-    noteNode.style.cssText = `position: absolute; top: ${data.top}px; left: ${data.left}px;`;
+    noteNode.setAttribute("data-index", index); // index нужен, чтобы найти объект в массиве data
+    noteNode.classList.add("note");
+    noteNode.style.cssText = `position: absolute; top: ${data.top}px; left: ${data.left}px; background-color: ${data.color}`;
     new DnD(noteNode, this.setCoords);
+    noteNode.addEventListener("dblclick", () => {
+      this._editNote(textareaNode, contentNode, index);
+    });
+
+    const topContentNode = divNode.cloneNode(true);
+    topContentNode.classList.add("note__topContent");
 
     const btnCloseNode = buttonNode.cloneNode(true);
-    btnCloseNode.classList.add('note__close');
-    btnCloseNode.innerHTML = '<i class="fas fa-times fa-2x pt-2 pr-2 pb-2 id="closeNode""></i>';
+    btnCloseNode.classList.add("note__close");
+    btnCloseNode.innerHTML =
+      '<i class="fas fa-times fa-2x id="closeNode""></i>';
+    btnCloseNode.addEventListener("click", () => {
+      this._clickCloseNote(index);
+    });
 
-    const contentNode = textAreaNode.cloneNode(true);
-    contentNode.classList.add('note__content');
+    const contentNode = divNode.cloneNode(true);
+    contentNode.classList.add("note__content");
     contentNode.innerHTML = data.content;
 
-    noteNode.append(btnCloseNode, contentNode)
+    textareaNode.classList.add("note__textarea");
+    textareaNode.hidden = true;
+    textareaNode.value = data.content;
+
+    const imgTopNote = document.createElement("img");
+    imgTopNote.classList.add("note__img");
+    imgTopNote.src = imgSrc;
+
+    noteNode.append(topContentNode, contentNode, textareaNode);
+    topContentNode.append(btnCloseNode, imgTopNote);
 
     return noteNode;
   }
 
   render() {
-    this.container.innerHTML = ''; 
+    this.container.innerHTML = "";
 
     this.data.forEach((noteObj, index) => {
       const noteNode = this._createNote(noteObj, index);
 
       this.container.append(noteNode);
-    })
+    });
   }
 }
